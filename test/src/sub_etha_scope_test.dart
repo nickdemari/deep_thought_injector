@@ -1,6 +1,22 @@
 import 'package:deep_thought_injector/deep_thought_injector.dart';
 import 'package:test/test.dart';
 
+// Helper classes for circular dependency tests.
+class ServiceA {
+  ServiceA(this.dependency);
+  final dynamic dependency;
+}
+
+class ServiceB {
+  ServiceB(this.dependency);
+  final dynamic dependency;
+}
+
+class ServiceC {
+  ServiceC([this.dependency]);
+  final dynamic dependency;
+}
+
 void main() {
   group('SubEthaScope', () {
     group('async singleton race condition', () {
@@ -149,6 +165,180 @@ void main() {
         expect(first, equals('transient-1'));
         expect(second, equals('transient-2'));
         expect(counter, equals(2));
+      });
+    });
+
+    group('circular dependency detection', () {
+      test(
+          'direct circular dependency (A -> B -> A) throws '
+          'VogonPoetryException with chain in message', () {
+        final scope = SubEthaScope();
+
+        scope.register<ServiceA>(
+          () => ServiceA(scope.locate<ServiceB>()),
+        );
+        scope.register<ServiceB>(
+          () => ServiceB(scope.locate<ServiceA>()),
+        );
+
+        expect(
+          () => scope.locate<ServiceA>(),
+          throwsA(
+            isA<VogonPoetryException>().having(
+              (e) => e.cause,
+              'cause',
+              allOf(
+                contains('Circular dependency detected'),
+                contains('ServiceA'),
+                contains('ServiceB'),
+              ),
+            ),
+          ),
+        );
+      });
+
+      test(
+          'transitive circular dependency (A -> B -> C -> A) throws '
+          'VogonPoetryException with full chain', () {
+        final scope = SubEthaScope();
+
+        scope.register<ServiceA>(
+          () => ServiceA(scope.locate<ServiceB>()),
+        );
+        scope.register<ServiceB>(
+          () => ServiceB(scope.locate<ServiceC>()),
+        );
+        scope.register<ServiceC>(
+          () => ServiceC(scope.locate<ServiceA>()),
+        );
+
+        expect(
+          () => scope.locate<ServiceA>(),
+          throwsA(
+            isA<VogonPoetryException>().having(
+              (e) => e.cause,
+              'cause',
+              allOf(
+                contains('Circular dependency detected'),
+                contains('ServiceA'),
+                contains('ServiceB'),
+                contains('ServiceC'),
+              ),
+            ),
+          ),
+        );
+      });
+
+      test(
+          'non-circular linear chain (A -> B -> C) resolves '
+          'successfully without false positives', () {
+        final scope = SubEthaScope();
+
+        scope.register<ServiceC>(() => ServiceC());
+        scope.register<ServiceB>(
+          () => ServiceB(scope.locate<ServiceC>()),
+        );
+        scope.register<ServiceA>(
+          () => ServiceA(scope.locate<ServiceB>()),
+        );
+
+        final result = scope.locate<ServiceA>();
+        expect(result, isA<ServiceA>());
+        expect(result.dependency, isA<ServiceB>());
+        expect(
+          (result.dependency as ServiceB).dependency,
+          isA<ServiceC>(),
+        );
+      });
+
+      test(
+          'cross-scope circular dependency is detected '
+          'when child and parent form a cycle', () {
+        final parent = SubEthaScope();
+        final child = parent.createChildScope();
+
+        // Parent's ServiceB depends on ServiceA (resolved from child).
+        parent.register<ServiceB>(
+          () => ServiceB(parent.locate<ServiceA>()),
+        );
+
+        // Child's ServiceA depends on ServiceB (resolved from parent).
+        child.register<ServiceA>(
+          () => ServiceA(child.locate<ServiceB>()),
+        );
+
+        expect(
+          () => child.locate<ServiceA>(),
+          throwsA(
+            isA<VogonPoetryException>().having(
+              (e) => e.cause,
+              'cause',
+              contains('Circular dependency detected'),
+            ),
+          ),
+        );
+      });
+
+      test(
+          'named services of the same type that depend on each other '
+          'are detected as circular', () {
+        final scope = SubEthaScope();
+
+        scope.register<String>(
+          () => scope.locate<String>(name: 'beta'),
+          name: 'alpha',
+        );
+        scope.register<String>(
+          () => scope.locate<String>(name: 'alpha'),
+          name: 'beta',
+        );
+
+        expect(
+          () => scope.locate<String>(name: 'alpha'),
+          throwsA(
+            isA<VogonPoetryException>().having(
+              (e) => e.cause,
+              'cause',
+              contains('Circular dependency detected'),
+            ),
+          ),
+        );
+
+        // Non-circular named services should resolve fine.
+        final scope2 = SubEthaScope();
+        scope2.register<String>(() => 'hello', name: 'first');
+        scope2.register<String>(() => 'world', name: 'second');
+
+        expect(scope2.locate<String>(name: 'first'), equals('hello'));
+        expect(scope2.locate<String>(name: 'second'), equals('world'));
+      });
+
+      test(
+          'async circular dependency (A -> B -> A) throws '
+          'VogonPoetryException with chain in message', () async {
+        final scope = SubEthaScope();
+
+        await scope.registerAsync<ServiceA>(
+          () async => ServiceA(await scope.locateAsync<ServiceB>()),
+        );
+        await scope.registerAsync<ServiceB>(
+          () async => ServiceB(await scope.locateAsync<ServiceA>()),
+        );
+
+        await expectLater(
+          scope.locateAsync<ServiceA>(),
+          throwsA(
+            isA<VogonPoetryException>().having(
+              (e) => e.cause,
+              'cause',
+              allOf(
+                contains('Circular dependency detected'),
+                contains('ServiceA'),
+                contains('ServiceB'),
+              ),
+            ),
+          ),
+        );
       });
     });
   });
