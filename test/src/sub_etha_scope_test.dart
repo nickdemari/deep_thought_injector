@@ -234,7 +234,7 @@ void main() {
           'successfully without false positives', () {
         final scope = SubEthaScope();
 
-        scope.register<ServiceC>(() => ServiceC());
+        scope.register<ServiceC>(ServiceC.new);
         scope.register<ServiceB>(
           () => ServiceB(scope.locate<ServiceC>()),
         );

@@ -22,6 +22,11 @@ class _ServiceIdentifier {
 /// Updated enum to include 'scoped' lifecycle.
 enum Lifecycle { singleton, transient, scoped }
 
+/// Zone key for threading resolution stacks through async factory closures.
+/// Zone values flow correctly across await boundaries without leaking to
+/// independent callers, unlike instance fields.
+final _resolutionStackZoneKey = Object();
+
 /// The SubEthaScope is the heart of the Deep Thought Injector.
 /// It now supports nested scopes and named registrations.
 class SubEthaScope {
@@ -29,6 +34,12 @@ class SubEthaScope {
   final SubEthaScope? parent;
   // Simple lock object placeholder for thread safety.
   final _lock = Object();
+
+  // Dart's default Set (LinkedHashSet) preserves insertion order for chain
+  // display. This field holds the active resolution stack so that re-entrant
+  // locate/locateAsync calls from within SYNC factory closures can detect
+  // cycles. For async, Zone values are used instead (see _resolutionStackZoneKey).
+  Set<_ServiceIdentifier>? _currentResolutionStack;
 
   SubEthaScope({this.parent});
 
@@ -84,11 +95,27 @@ class SubEthaScope {
   }
 
   /// Locate a synchronous service.
-  T locate<T>({String? name}) {
+  T locate<T>({
+    String? name,
+    Set<_ServiceIdentifier>? resolutionStack,
+  }) {
     final key = _ServiceIdentifier(T, name);
+    final stack =
+        resolutionStack ?? _currentResolutionStack ?? <_ServiceIdentifier>{};
+
+    if (stack.contains(key)) {
+      final chain = [...stack, key]
+          .map(
+            (id) => id.name != null ? '${id.type}(${id.name})' : '${id.type}',
+          )
+          .join(' -> ');
+      throw VogonPoetryException('Circular dependency detected: $chain');
+    }
+    stack.add(key);
+
     final serviceFactory = _factories[key] as _ServiceFactory<T>?;
     if (serviceFactory == null && parent != null) {
-      return parent!.locate<T>(name: name);
+      return parent!.locate<T>(name: name, resolutionStack: stack);
     }
     if (serviceFactory == null) {
       throw const VogonPoetryException('Service of this type not found');
@@ -97,46 +124,107 @@ class SubEthaScope {
       throw const VogonPoetryException(
           'Asynchronous factory registered. Use locateAsync instead.');
     }
-    if (serviceFactory.lifecycle == Lifecycle.transient) {
-      return serviceFactory.syncFactory!();
+
+    final previousStack = _currentResolutionStack;
+    _currentResolutionStack = stack;
+    try {
+      if (serviceFactory.lifecycle == Lifecycle.transient) {
+        return serviceFactory.syncFactory!();
+      }
+      serviceFactory.instance ??= serviceFactory.syncFactory!();
+      return serviceFactory.instance!;
+    } finally {
+      _currentResolutionStack = previousStack;
     }
-    serviceFactory.instance ??= serviceFactory.syncFactory!();
-    return serviceFactory.instance!;
   }
 
   /// Locate a service asynchronously.
-  Future<T> locateAsync<T>({String? name}) async {
+  ///
+  /// Uses Zone values to thread resolution stacks through async factory
+  /// closures. Zone values flow correctly across await boundaries without
+  /// leaking to independent concurrent callers.
+  Future<T> locateAsync<T>({
+    String? name,
+    Set<_ServiceIdentifier>? resolutionStack,
+  }) async {
     final key = _ServiceIdentifier(T, name);
-    var serviceFactory = _factories[key] as _ServiceFactory<T>?;
+
+    // Resolve the active stack: explicit param > zone value > none.
+    final activeStack = resolutionStack ??
+        Zone.current[_resolutionStackZoneKey] as Set<_ServiceIdentifier>?;
+
+    // Cycle check -- if key is already being resolved in the current chain.
+    if (activeStack != null && activeStack.contains(key)) {
+      final chain = [...activeStack, key]
+          .map(
+            (id) => id.name != null ? '${id.type}(${id.name})' : '${id.type}',
+          )
+          .join(' -> ');
+      throw VogonPoetryException('Circular dependency detected: $chain');
+    }
+
+    final serviceFactory = _factories[key] as _ServiceFactory<T>?;
+
     if (serviceFactory == null && parent != null) {
-      return await parent!.locateAsync<T>(name: name);
+      final stack = activeStack ?? <_ServiceIdentifier>{};
+      stack.add(key);
+      return parent!.locateAsync<T>(
+        name: name,
+        resolutionStack: stack,
+      );
     }
     if (serviceFactory == null) {
       throw const VogonPoetryException('Service of this type not found');
     }
+
+    if (serviceFactory.asyncFactory != null) {
+      if (serviceFactory.lifecycle != Lifecycle.transient) {
+        // Fast path: already resolved.
+        if (serviceFactory.instance != null) {
+          return serviceFactory.instance!;
+        }
+        // Another caller is already resolving -- wait for its result.
+        if (serviceFactory._asyncCompleter != null) {
+          return serviceFactory._asyncCompleter!.future;
+        }
+      }
+    }
+
+    // About to invoke a factory -- add to cycle detection stack.
+    final stack = activeStack ?? <_ServiceIdentifier>{};
+    stack.add(key);
+
     if (serviceFactory.asyncFactory != null) {
       if (serviceFactory.lifecycle == Lifecycle.transient) {
-        return await serviceFactory.asyncFactory!();
-      }
-      // Fast path: already resolved.
-      if (serviceFactory.instance != null) {
-        return serviceFactory.instance!;
-      }
-      // Another caller is already resolving -- wait for its result.
-      if (serviceFactory._asyncCompleter != null) {
-        return serviceFactory._asyncCompleter!.future;
+        // Run transient factory in a zone with the resolution stack.
+        return await runZoned(
+          () => serviceFactory.asyncFactory!(),
+          zoneValues: {_resolutionStackZoneKey: stack},
+        );
       }
       // First caller: claim resolution with a Completer BEFORE any await.
       final completer = Completer<T>();
       serviceFactory._asyncCompleter = completer;
       try {
-        final result = await serviceFactory.asyncFactory!();
+        // Run the factory in a zone carrying the resolution stack so that
+        // re-entrant locateAsync calls from within the closure detect cycles.
+        final result = await runZoned(
+          () => serviceFactory.asyncFactory!(),
+          zoneValues: {_resolutionStackZoneKey: stack},
+        );
         serviceFactory.instance = result;
         completer.complete(result);
         return result;
       } catch (e, s) {
-        // Allow retry on subsequent calls.
+        // Allow retry on subsequent calls. Propagate error to any concurrent
+        // waiters, then silence the Completer's future to prevent unhandled
+        // error reports when no concurrent waiters exist.
         completer.completeError(e, s);
+        // Silence the Completer's future to prevent unhandled error reports
+        // when no concurrent waiters exist. The catchError handler must
+        // return a value of type T, but it will never be used since only
+        // pre-existing .then listeners receive the error.
+        unawaited(completer.future.then((_) {}, onError: (_) {}));
         rethrow;
       } finally {
         // Clear completer so GC can reclaim / retry is possible.
@@ -144,11 +232,19 @@ class SubEthaScope {
       }
     } else {
       // Fallback to synchronous factory if present.
-      if (serviceFactory.lifecycle == Lifecycle.transient) {
-        return serviceFactory.syncFactory!();
+      // For sync factories called via locateAsync, use _currentResolutionStack
+      // so that sync locate calls within the factory detect cycles.
+      final previousStack = _currentResolutionStack;
+      _currentResolutionStack = stack;
+      try {
+        if (serviceFactory.lifecycle == Lifecycle.transient) {
+          return serviceFactory.syncFactory!();
+        }
+        serviceFactory.instance ??= serviceFactory.syncFactory!();
+        return serviceFactory.instance!;
+      } finally {
+        _currentResolutionStack = previousStack;
       }
-      serviceFactory.instance ??= serviceFactory.syncFactory!();
-      return serviceFactory.instance!;
     }
   }
 
