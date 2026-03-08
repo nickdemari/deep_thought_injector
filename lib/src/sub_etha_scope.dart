@@ -118,10 +118,30 @@ class SubEthaScope {
       if (serviceFactory.lifecycle == Lifecycle.transient) {
         return await serviceFactory.asyncFactory!();
       }
-      if (serviceFactory.instance == null) {
-        serviceFactory.instance = await serviceFactory.asyncFactory!();
+      // Fast path: already resolved.
+      if (serviceFactory.instance != null) {
+        return serviceFactory.instance!;
       }
-      return serviceFactory.instance!;
+      // Another caller is already resolving -- wait for its result.
+      if (serviceFactory._asyncCompleter != null) {
+        return serviceFactory._asyncCompleter!.future;
+      }
+      // First caller: claim resolution with a Completer BEFORE any await.
+      final completer = Completer<T>();
+      serviceFactory._asyncCompleter = completer;
+      try {
+        final result = await serviceFactory.asyncFactory!();
+        serviceFactory.instance = result;
+        completer.complete(result);
+        return result;
+      } catch (e, s) {
+        // Allow retry on subsequent calls.
+        completer.completeError(e, s);
+        rethrow;
+      } finally {
+        // Clear completer so GC can reclaim / retry is possible.
+        serviceFactory._asyncCompleter = null;
+      }
     } else {
       // Fallback to synchronous factory if present.
       if (serviceFactory.lifecycle == Lifecycle.transient) {
@@ -167,6 +187,10 @@ class _ServiceFactory<T> {
   final bool lazy;
   final Lifecycle lifecycle;
   T? instance;
+
+  /// Guards concurrent async singleton resolution.
+  /// Set synchronously before the first await to prevent interleaving.
+  Completer<T>? _asyncCompleter;
 }
 
 /// A disposable interface that service instances can implement.

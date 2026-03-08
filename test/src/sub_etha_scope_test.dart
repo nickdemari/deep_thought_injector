@@ -85,11 +85,11 @@ void main() {
           scope.locateAsync<String>(),
         ];
 
-        expect(
+        await expectLater(
           futures[0],
           throwsA(isA<VogonPoetryException>()),
         );
-        expect(
+        await expectLater(
           futures[1],
           throwsA(isA<VogonPoetryException>()),
         );
