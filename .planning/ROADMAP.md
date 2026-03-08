@@ -47,11 +47,11 @@ Plans:
   2. `AutoWiring` class and `DeepThoughtConfig` class no longer exist in the codebase (no references, no imports)
   3. `DeepThought.reset()` is a public method that delegates to `SubEthaScope.reset()` and clears all registrations in scope
   4. `dart analyze` passes with zero errors after cleanup
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Declare logging dependency, delete stub files, clean up references and imports
+- [ ] 02-02-PLAN.md — Add DeepThought.reset() method with TDD (tests first, then delegation)
 
 ### Phase 3: API Surface
 **Goal**: Developers can use standard DI naming conventions (register/get) alongside themed names, and can verify and query registrations
@@ -166,7 +166,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Bug Fixes | 0/2 | Planning complete | - |
-| 2. Core Cleanup | 0/? | Not started | - |
+| 2. Core Cleanup | 0/2 | Planning complete | - |
 | 3. API Surface | 0/? | Not started | - |
 | 4. Widget Provider Foundation | 0/? | Not started | - |
 | 5. BuildContext Consumer API | 0/? | Not started | - |
