@@ -107,17 +107,17 @@ void main() {
         final deepThought = DeepThought();
 
         // Calling reset on a fresh (empty) injector must be idempotent.
-        expect(() => deepThought.reset(), returnsNormally);
+        expect(deepThought.reset, returnsNormally);
       });
 
       test('allows re-registration after reset', () {
         final deepThought = DeepThought()
           ..ponder<TestService>(() => TestService(1));
 
-        deepThought.reset();
-
-        // Re-register a different instance after reset.
-        deepThought.ponder<TestService>(() => TestService(2));
+        deepThought
+          ..reset()
+          // Re-register a different instance after reset.
+          ..ponder<TestService>(() => TestService(2));
         expect(deepThought.question<TestService>().value, equals(2));
       });
     });
