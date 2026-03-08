@@ -69,16 +69,6 @@ final deepThought = DeepThought();
 deepThought.ponder<YourService>(() => YourService(), lifecycle: Lifecycle.transient);
 ```
 
-### Configuration & Overrides
-
-A basic configuration class is available:
-```dart
-import 'package:deep_thought_injector/src/deep_thought_config.dart';
-
-final config = DeepThoughtConfig(environment: 'staging');
-// Extend this class to override dependencies per environment.
-```
-
 [dart_install_link]: https://dart.dev/get-dart
 [github_actions_link]: https://docs.github.com/en/actions/learn-github-actions
 [license_badge]: https://img.shields.io/badge/license-MIT-blue.svg

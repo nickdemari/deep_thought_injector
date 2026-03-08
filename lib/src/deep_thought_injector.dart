@@ -3,7 +3,6 @@
 import 'package:deep_thought_injector/src/sub_etha_scope.dart';
 import 'package:deep_thought_injector/src/vogon_poetry_exception.dart';
 import 'package:logging/logging.dart';
-import 'sub_etha_scope.dart'; // now includes Lifecycle
 
 /// The Deep Thought Injector is a dependency injection library
 class DeepThought {
@@ -72,6 +71,17 @@ class DeepThought {
         stackTrace: s,
       );
     }
+  }
+
+  /// Clear all registrations, disposing any [Disposable] services.
+  ///
+  /// Delegates to [SubEthaScope.reset]. Idempotent -- safe to call on an
+  /// empty injector.
+  void reset() {
+    _logger.info(
+      'Resetting DeepThought -- all registrations will be cleared.',
+    );
+    _scope.reset();
   }
 
   /// Create a child scope for nested dependency injection.

@@ -32,8 +32,6 @@ final _resolutionStackZoneKey = Object();
 class SubEthaScope {
   final Map<_ServiceIdentifier, _ServiceFactory<dynamic>> _factories = {};
   final SubEthaScope? parent;
-  // Simple lock object placeholder for thread safety.
-  final _lock = Object();
 
   // Dart's default Set (LinkedHashSet) preserves insertion order for chain
   // display. This field holds the active resolution stack so that re-entrant
