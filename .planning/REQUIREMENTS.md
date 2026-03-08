@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Core Fixes
 
-- [ ] **CORE-01**: Async singleton race condition fixed via Completer pattern (concurrent `locateAsync` calls for same lazy singleton must not invoke factory twice)
+- [x] **CORE-01**: Async singleton race condition fixed via Completer pattern (concurrent `locateAsync` calls for same lazy singleton must not invoke factory twice)
 - [ ] **CORE-02**: Circular dependency detection during resolution (detect and throw descriptive error instead of stack overflow)
 - [ ] **CORE-03**: `logging` dependency properly declared in pubspec.yaml
 - [ ] **CORE-04**: `AutoWiring` stub removed from codebase
@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Testing
 
-- [ ] **TEST-01**: Unit tests for async singleton race condition fix (concurrent access returns same instance)
+- [x] **TEST-01**: Unit tests for async singleton race condition fix (concurrent access returns same instance)
 - [ ] **TEST-02**: Unit tests for circular dependency detection (throws descriptive error)
 - [ ] **TEST-03**: Widget tests for `DeepThoughtProvider` scope creation and disposal lifecycle
 - [ ] **TEST-04**: Widget tests for nested scope hierarchy and parent fallback resolution
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | Phase 1: Core Bug Fixes | Pending |
+| CORE-01 | Phase 1: Core Bug Fixes | Complete |
 | CORE-02 | Phase 1: Core Bug Fixes | Pending |
 | CORE-03 | Phase 2: Core Cleanup | Pending |
 | CORE-04 | Phase 2: Core Cleanup | Pending |
@@ -109,7 +109,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOCS-04 | Phase 9: Documentation and Examples | Pending |
 | DOCS-05 | Phase 8: Pub.dev Metadata and Analysis | Pending |
 | DOCS-06 | Phase 8: Pub.dev Metadata and Analysis | Pending |
-| TEST-01 | Phase 1: Core Bug Fixes | Pending |
+| TEST-01 | Phase 1: Core Bug Fixes | Complete |
 | TEST-02 | Phase 1: Core Bug Fixes | Pending |
 | TEST-03 | Phase 7: Widget Test Suite | Pending |
 | TEST-04 | Phase 7: Widget Test Suite | Pending |
