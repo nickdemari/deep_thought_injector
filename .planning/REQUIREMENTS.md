@@ -11,9 +11,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **CORE-01**: Async singleton race condition fixed via Completer pattern (concurrent `locateAsync` calls for same lazy singleton must not invoke factory twice)
 - [x] **CORE-02**: Circular dependency detection during resolution (detect and throw descriptive error instead of stack overflow)
-- [ ] **CORE-03**: `logging` dependency properly declared in pubspec.yaml
-- [ ] **CORE-04**: `AutoWiring` stub removed from codebase
-- [ ] **CORE-05**: `DeepThoughtConfig` stub removed from codebase
+- [x] **CORE-03**: `logging` dependency properly declared in pubspec.yaml
+- [x] **CORE-04**: `AutoWiring` stub removed from codebase
+- [x] **CORE-05**: `DeepThoughtConfig` stub removed from codebase
 - [ ] **CORE-06**: `DeepThought.reset()` public method added (delegates to `SubEthaScope.reset()`)
 
 ### Widget Integration
@@ -88,9 +88,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | CORE-01 | Phase 1: Core Bug Fixes | Complete |
 | CORE-02 | Phase 1: Core Bug Fixes | Complete |
-| CORE-03 | Phase 2: Core Cleanup | Pending |
-| CORE-04 | Phase 2: Core Cleanup | Pending |
-| CORE-05 | Phase 2: Core Cleanup | Pending |
+| CORE-03 | Phase 2: Core Cleanup | Complete |
+| CORE-04 | Phase 2: Core Cleanup | Complete |
+| CORE-05 | Phase 2: Core Cleanup | Complete |
 | CORE-06 | Phase 2: Core Cleanup | Pending |
 | WIDG-01 | Phase 4: Widget Provider Foundation | Pending |
 | WIDG-02 | Phase 4: Widget Provider Foundation | Pending |
