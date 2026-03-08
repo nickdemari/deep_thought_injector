@@ -86,41 +86,41 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | — | Pending |
-| CORE-02 | — | Pending |
-| CORE-03 | — | Pending |
-| CORE-04 | — | Pending |
-| CORE-05 | — | Pending |
-| CORE-06 | — | Pending |
-| WIDG-01 | — | Pending |
-| WIDG-02 | — | Pending |
-| WIDG-03 | — | Pending |
-| WIDG-04 | — | Pending |
-| WIDG-05 | — | Pending |
-| WIDG-06 | — | Pending |
-| WIDG-07 | — | Pending |
-| API-01 | — | Pending |
-| API-02 | — | Pending |
-| API-03 | — | Pending |
-| API-04 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
-| DOCS-03 | — | Pending |
-| DOCS-04 | — | Pending |
-| DOCS-05 | — | Pending |
-| DOCS-06 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| TEST-03 | — | Pending |
-| TEST-04 | — | Pending |
-| TEST-05 | — | Pending |
-| TEST-06 | — | Pending |
+| CORE-01 | Phase 1: Core Bug Fixes | Pending |
+| CORE-02 | Phase 1: Core Bug Fixes | Pending |
+| CORE-03 | Phase 2: Core Cleanup | Pending |
+| CORE-04 | Phase 2: Core Cleanup | Pending |
+| CORE-05 | Phase 2: Core Cleanup | Pending |
+| CORE-06 | Phase 2: Core Cleanup | Pending |
+| WIDG-01 | Phase 4: Widget Provider Foundation | Pending |
+| WIDG-02 | Phase 4: Widget Provider Foundation | Pending |
+| WIDG-03 | Phase 5: BuildContext Consumer API | Pending |
+| WIDG-04 | Phase 5: BuildContext Consumer API | Pending |
+| WIDG-05 | Phase 5: BuildContext Consumer API | Pending |
+| WIDG-06 | Phase 6: Scoped Lifecycle and Disposal | Pending |
+| WIDG-07 | Phase 6: Scoped Lifecycle and Disposal | Pending |
+| API-01 | Phase 3: API Surface | Pending |
+| API-02 | Phase 3: API Surface | Pending |
+| API-03 | Phase 3: API Surface | Pending |
+| API-04 | Phase 3: API Surface | Pending |
+| DOCS-01 | Phase 9: Documentation and Examples | Pending |
+| DOCS-02 | Phase 9: Documentation and Examples | Pending |
+| DOCS-03 | Phase 9: Documentation and Examples | Pending |
+| DOCS-04 | Phase 9: Documentation and Examples | Pending |
+| DOCS-05 | Phase 8: Pub.dev Metadata and Analysis | Pending |
+| DOCS-06 | Phase 8: Pub.dev Metadata and Analysis | Pending |
+| TEST-01 | Phase 1: Core Bug Fixes | Pending |
+| TEST-02 | Phase 1: Core Bug Fixes | Pending |
+| TEST-03 | Phase 7: Widget Test Suite | Pending |
+| TEST-04 | Phase 7: Widget Test Suite | Pending |
+| TEST-05 | Phase 7: Widget Test Suite | Pending |
+| TEST-06 | Phase 7: Widget Test Suite | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28
+- Mapped to phases: 28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-07*
-*Last updated: 2026-03-07 after initial definition*
+*Last updated: 2026-03-07 after roadmap creation*
