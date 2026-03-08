@@ -32,11 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Two concurrent `locateAsync` calls for the same lazy singleton return the identical instance (factory invoked exactly once)
   2. Registering services with circular dependencies and resolving them throws a descriptive `VogonPoetryException` instead of a stack overflow
   3. Unit tests for both behaviors pass and cover edge cases (nested async, transitive circular deps)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Fix async singleton race condition with Completer pattern (TDD)
+- [ ] 01-02-PLAN.md — Add circular dependency detection with Set-based resolution stack (TDD)
 
 ### Phase 2: Core Cleanup
 **Goal**: The codebase is free of dead stubs and has correct dependency declarations, ready to build new features on
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Bug Fixes | 0/? | Not started | - |
+| 1. Core Bug Fixes | 0/2 | Planning complete | - |
 | 2. Core Cleanup | 0/? | Not started | - |
 | 3. API Surface | 0/? | Not started | - |
 | 4. Widget Provider Foundation | 0/? | Not started | - |
