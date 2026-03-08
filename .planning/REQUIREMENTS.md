@@ -14,7 +14,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CORE-03**: `logging` dependency properly declared in pubspec.yaml
 - [x] **CORE-04**: `AutoWiring` stub removed from codebase
 - [x] **CORE-05**: `DeepThoughtConfig` stub removed from codebase
-- [ ] **CORE-06**: `DeepThought.reset()` public method added (delegates to `SubEthaScope.reset()`)
+- [x] **CORE-06**: `DeepThought.reset()` public method added (delegates to `SubEthaScope.reset()`)
 
 ### Widget Integration
 
@@ -91,7 +91,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CORE-03 | Phase 2: Core Cleanup | Complete |
 | CORE-04 | Phase 2: Core Cleanup | Complete |
 | CORE-05 | Phase 2: Core Cleanup | Complete |
-| CORE-06 | Phase 2: Core Cleanup | Pending |
+| CORE-06 | Phase 2: Core Cleanup | Complete |
 | WIDG-01 | Phase 4: Widget Provider Foundation | Pending |
 | WIDG-02 | Phase 4: Widget Provider Foundation | Pending |
 | WIDG-03 | Phase 5: BuildContext Consumer API | Pending |
